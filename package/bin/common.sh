@@ -7,6 +7,7 @@ umask 077
 GETPROP=${NEEV_GETPROP:-/system/bin/getprop}
 APP_PROCESS=${NEEV_APP_PROCESS:-/system/bin/app_process}
 DUMPSYS=${NEEV_DUMPSYS:-/system/bin/dumpsys}
+SERVICE=${NEEV_SERVICE:-/system/bin/service}
 STATE=${NEEV_STATE:-/data/nemesis/state/local.hkmc.factory82}
 SESSION=${NEEV_SESSION:-/data/local/tmp/neev-consent.session}
 UPTIME_FILE=${NEEV_UPTIME_FILE:-/proc/uptime}

@@ -20,6 +20,7 @@ public final class NeevConsentTest {
         SystemProperties.VALUES.put("sys.boot_completed", "1");
         ServiceManager.binder = new IBinder() {};
         ServiceManager.lookups = 0;
+        ServiceManager.bootCompletedOnLookup = null;
         Stub.calls = 0;
         Stub.error = null;
         com.hkmc.Service.FACTORY_SERVICE = "com.hkmc.factory";
@@ -46,6 +47,18 @@ public final class NeevConsentTest {
         check(run("--check") == 0 && Stub.calls == 0, "read-only check can run before boot completion");
         check(output.contains("status=ready"), "check ready status");
         check(run("--dismiss") == 10 && Stub.calls == 0, "boot-incomplete cannot call");
+        reset();
+        ServiceManager.bootCompletedOnLookup = "0";
+        check(run("--dismiss") == 10 && ServiceManager.lookups == 1 && Stub.calls == 0,
+                "framework restart during service resolution prevents dismissal");
+        check(output.contains("status=boot-incomplete"), "late readiness loss is retryable only before mutation");
+        reset();
+        ServiceManager.bootCompletedOnLookup = "";
+        check(run("--dismiss") == 10 && Stub.calls == 0, "missing readiness after resolution prevents dismissal");
+        reset();
+        ServiceManager.bootCompletedOnLookup = "0";
+        check(run("--check") == 0 && ServiceManager.lookups == 1 && Stub.calls == 0,
+                "check mode remains read-only and independent of late boot state");
         reset();
         SystemProperties.VALUES.put("ro.build.product", "NEEV.USA.0000.V039.001.260902");
         check(run("--dismiss") == 20 && ServiceManager.lookups == 0 && Stub.calls == 0, "wrong firmware refused before service lookup");

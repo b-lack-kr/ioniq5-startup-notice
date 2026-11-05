@@ -10,7 +10,7 @@ import tempfile
 import unittest
 
 BASE = Path(__file__).resolve().parents[1]
-PACKAGE = "local.hkmc.factory82-4.3.1-neev.zip"
+PACKAGE = "local.hkmc.factory82-4.3.2-neev.zip"
 HELPER = "NEEV_STARTUP_NOTICE/neev-consent.jar"
 MOCK = r'''
 import hashlib, json, os, sys

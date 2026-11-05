@@ -1,4 +1,4 @@
-NEEV KOR 260902 adaptation, version 4.3.1, 2026-11-05.
+NEEV KOR 260902 adaptation, version 4.3.2, 2026-11-05.
 Based on local.hkmc.factory82 v4.2 by armandodollia (MIT, see LICENSE).
 Original ZIP SHA-256: c9d12d19fbccbcfd4d0c0e537ae692dfa0a8eba82ae6d21d05181627b1e810bb
 Upstream: https://github.com/armandodollia/nemesis-package-builds
@@ -13,3 +13,7 @@ No HMG-API installation or modification is required.
 An accepted API request is not proof of visual dismissal. This build has not
 been vehicle-tested. Uninstall stops future automatic calls; no inverse OEM
 command is known or sent.
+
+Version 4.3.2 removes fixed startup/grace delays, polls readiness every second,
+uses a single validated Java dismissal invocation, and rechecks boot state at
+the last moment. Readiness retries are bounded; unknown outcomes are not retried.

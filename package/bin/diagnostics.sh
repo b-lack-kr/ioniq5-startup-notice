@@ -3,7 +3,7 @@ SCRIPT_DIR=${0%/*}; [ "$SCRIPT_DIR" != "$0" ] || SCRIPT_DIR=.
 BASE=$(cd "$SCRIPT_DIR/.." && pwd) || { echo "cannot locate package directory"; exit 1; }
 . "$BASE/bin/common.sh"
 report() {
-    echo 'NEEV Startup Notice 4.3.1 — read-only diagnostics'
+    echo 'NEEV Startup Notice 4.3.2 — read-only diagnostics'
     for PROP in ro.build.product ro.board.platform ro.build.version.release ro.mobis.targetdir ro.mobis.onebindir sys.boot_completed; do
         printf '%s=' "$PROP"; "$GETPROP" "$PROP"
     done

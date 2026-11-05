@@ -60,15 +60,16 @@
     "Stock file fingerprints identify the reported image and do not prove current on-car state."
   ],
   "local_revision": {
-    "version": "4.3.1",
-    "previous_vehicle_result": "4.3.0: Operation failed immediately after USB install approval; no USB-side failure log captured.",
-    "fixes": [
-      "Normalize supported ro.mobis.targetdir path before model comparison",
-      "Remove external dirname and tail dependencies",
-      "Explicit Android runtime environment",
-      "Logged execute installer with read-only API preflight before package update"
+    "version": "4.3.2",
+    "previous_vehicle_feedback": "Owner reports that 4.3.1 closes the notice after a delay; package-caused dismissal and its timing were not independently verified from logs.",
+    "changes": [
+      "Remove the 15-second startup floor and 2-second grace sleep",
+      "Poll boot/display/service readiness every second",
+      "Replace duplicate Java check/dismiss launches with native registry check and one validated --dismiss call",
+      "Recheck boot completion immediately before OEM invocation",
+      "Keep 120-second eligible readiness budget, marker-based deduplication and no retry after uncertain call outcomes"
     ],
-    "root_cause_confirmed_on_vehicle": false
+    "vehicle_latency_verified": false
   },
   "runtime_provenance": "Prior owner-run Dalvik helpers on this head unit established app_process execution; this does not validate the consent-dismissal call."
 }

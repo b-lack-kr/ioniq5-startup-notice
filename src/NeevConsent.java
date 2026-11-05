@@ -68,6 +68,11 @@ public final class NeevConsent {
             if (!dismiss) {
                 return result(out, "ready", "interface and service available; no dismissal requested", 0);
             }
+            // Framework readiness can change while resolving the Binder proxy.
+            // This return guarantees that no dismissal was sent and may be retried.
+            if (!"1".equals(property("sys.boot_completed"))) {
+                return result(out, "boot-incomplete", "boot readiness changed during interface resolution; no call made", 10);
+            }
             // Invoke the public interface method, not a possibly inaccessible Proxy class.
             // The firmware's own Stub selects the correct Binder transaction.
             try {

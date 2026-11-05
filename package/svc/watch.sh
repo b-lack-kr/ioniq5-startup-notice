@@ -9,15 +9,16 @@ mkdir -p "$STATE" || exit 1
 chmod 700 "$STATE" || exit 1
 BOOT_ID=$(cat "$BOOT_ID_FILE" 2>/dev/null)
 [ -n "$BOOT_ID" ] || { log 'missing kernel boot id'; exit 20; }
-LAST_ATTEMPT=0
+LAST_ATTEMPT=-1
 LAST_DISPLAY=unknown
 LAST_BOOT_PROP=unknown
 LAST_UP=0
 INITIAL=1
 PENDING=
-TRIES=0
-NEXT_CHECK=0
-log 'NEEV startup notice v4.3.1 started; named OEM method; strict boot readiness'
+WAIT_STARTED=-1
+WAKE_UPTIME=0
+log 'NEEV startup notice v4.3.2 started; 1s readiness polling; no fixed startup delay'
+[ -x "$SERVICE" ] || { log 'service registry tool missing; no call'; exit 20; }
 
 write_marker() {
     printf '%s %s\n' "$NOW" "$BOOT_ID" > "$SESSION.new.$$" &&
@@ -47,59 +48,75 @@ while :; do
         REASON=resume-gap
     fi
     # A blocked/pending wake remains pending across boot/service initialization.
+    case "$REASON" in
+        display-wake|framework-ready)
+            if [ -n "$PENDING" ]; then
+                PENDING=$REASON; WAIT_STARTED=-1; WAKE_UPTIME=$NOW
+            fi ;;
+    esac
     if [ -n "$REASON" ] && [ -z "$PENDING" ]; then
-        if [ "$LAST_ATTEMPT" -gt 0 ] && [ $((NOW - LAST_ATTEMPT)) -ge 0 ] && [ $((NOW - LAST_ATTEMPT)) -lt 15 ]; then
+        # Real display/framework transitions must not be discarded by the
+        # cooldown used only to coalesce ambiguous duplicate wake signals.
+        CONFIRMED=0
+        case "$REASON" in display-wake|framework-ready) CONFIRMED=1 ;; esac
+        if [ "$CONFIRMED" = 0 ] && [ "$LAST_ATTEMPT" -ge 0 ] && [ $((NOW - LAST_ATTEMPT)) -ge 0 ] && [ $((NOW - LAST_ATTEMPT)) -lt 15 ]; then
             write_marker || { log 'cannot save session marker'; exit 1; }
         else
-            PENDING=$REASON; TRIES=0; NEXT_CHECK=0
+            PENDING=$REASON; WAIT_STARTED=-1; WAKE_UPTIME=$NOW
             log "wake=$PENDING display=$DISPLAY uptime=$NOW"
         fi
     fi
-    if [ -n "$PENDING" ] && [ "$DISPLAY" != off ] && [ "$NOW" -ge 15 ] &&
-        [ "$NOW" -ge "$NEXT_CHECK" ] && [ "$BOOT_PROP" = 1 ]; then
-        CHECK=$(consent --check 2>&1); RC=$?
-        if [ "$RC" = 0 ]; then
-            sleep 2
-            # Recheck display and Java-side boot state immediately before sending.
-            DISPLAY=$(display_state)
-            if [ "$DISPLAY" != off ]; then
-                NOW=$(uptime_seconds) || exit 20
-                # Save before the call: a crash/restart must not repeat an uncertain call.
-                write_marker || { log 'cannot save session marker; no call'; exit 1; }
-                LAST_ATTEMPT=$NOW
-                RESULT=$(consent --dismiss 2>&1); RC=$?
-                log "request=$PENDING exit=$RC $RESULT"
-                {
-                    echo "reason=$PENDING"; echo "uptime=$NOW"; echo "boot_id=$BOOT_ID"
-                    echo "exit=$RC"; echo "$RESULT"
-                    echo 'Visual screen dismissal requires on-vehicle confirmation.'
-                } > "$STATE/last_attempt.txt"
-                case "$RC" in
-                    10|11) # Helper guarantees these occur BEFORE the mutating call.
-                        LAST_ATTEMPT=0; NEXT_CHECK=$((NOW + 15))
-                        TRIES=$((TRIES + 1))
-                        if [ "$TRIES" -ge 8 ]; then
-                            log 'readiness changed repeatedly; waiting for next wake'
-                            PENDING=
-                        fi ;;
-                    *) PENDING= ;; # Includes unknown exceptions: no blind repeat.
-                esac
-            fi
-        elif [ "$RC" = 10 ] || [ "$RC" = 11 ]; then
-            TRIES=$((TRIES + 1)); NEXT_CHECK=$((NOW + 15))
-            if [ "$TRIES" -ge 8 ]; then
-                log "readiness timeout: $CHECK; waiting for next wake"
-                # Record this skipped wake to avoid a hot loop on missing marker.
-                write_marker || exit 1
-                PENDING=
-            fi
+    if [ -n "$PENDING" ] && [ "$DISPLAY" != off ] && [ "$BOOT_PROP" = 1 ]; then
+        [ "$WAIT_STARTED" -ge 0 ] || WAIT_STARTED=$NOW
+        if [ $((NOW - WAIT_STARTED)) -ge 120 ]; then
+            log 'readiness timeout after 120 eligible seconds; waiting for next wake'
+            write_marker || exit 1
+            PENDING=
         else
-            log "preflight refused: $CHECK; no call"
-            exit "$RC"
+            # Cheap readiness probe: do not start a Java VM once for --check
+            # and a second VM for --dismiss. The latter validates everything.
+            REGISTRY=$("$SERVICE" check com.hkmc.factory 2>&1); RC=$?
+            REGISTERED=0
+            if [ "$RC" = 0 ]; then
+                case "$REGISTRY" in *'com.hkmc.factory: found'*) REGISTERED=1 ;; esac
+            fi
+            if [ "$REGISTERED" = 1 ]; then
+                # No grace sleep: recheck the display, then let Java check boot
+                # completion again immediately before invoking the OEM method.
+                DISPLAY=$(display_state)
+                if [ "$DISPLAY" != off ]; then
+                    NOW=$(uptime_seconds) || exit 20
+                    # Save before the call: a crash/restart must not repeat an uncertain call.
+                    write_marker || { log 'cannot save session marker; no call'; exit 1; }
+                    LAST_ATTEMPT=$NOW
+                    RESULT=$(consent --dismiss 2>&1); RC=$?
+                    log "request=$PENDING exit=$RC $RESULT"
+                    {
+                        echo "reason=$PENDING"; echo "uptime=$NOW"; echo "boot_id=$BOOT_ID"
+                        echo "wake_uptime=$WAKE_UPTIME"
+                        echo "wake_to_request_seconds=$((NOW - WAKE_UPTIME))"
+                        echo "exit=$RC"; echo "$RESULT"
+                        echo 'Visual screen dismissal requires on-vehicle confirmation.'
+                    } > "$STATE/last_attempt.txt"
+                    case "$RC" in
+                        10|11) # Helper guarantees these occur BEFORE the mutating call.
+                            # A restart may retry this proven no-call outcome.
+                            rm -f "$SESSION" || exit 1
+                            LAST_ATTEMPT=-1 ;;
+                        20) log 'compatibility refused; no OEM call'; exit 20 ;;
+                        *) PENDING= ;; # Includes unknown exceptions: no blind repeat.
+                    esac
+                else
+                    WAIT_STARTED=-1
+                fi
+            fi
         fi
+    else
+        # Time spent booting or with the display off is not a readiness failure.
+        WAIT_STARTED=-1
     fi
     LAST_DISPLAY=$DISPLAY
     LAST_BOOT_PROP=$BOOT_PROP
     LAST_UP=$(uptime_seconds) || exit 20
-    sleep 3
+    sleep 1
 done

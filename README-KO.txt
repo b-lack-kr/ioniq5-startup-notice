@@ -1,4 +1,4 @@
-아이오닉 5 NEEV KOR 260902 시작 안내창 자동 닫기 — 4.3.1
+아이오닉 5 NEEV KOR 260902 시작 안내창 자동 닫기 — 4.3.2
 
 대상 차량
 현대 아이오닉 5, NEEV.KOR.0000.V039.001.260902
@@ -7,11 +7,11 @@ HMG-API 설치 여부와 무관하게 동작하도록 만든 독립 NEMESIS 패�
 차량·펌웨어와 API 조건이 맞지 않으면 안내창 닫기를 실행하지 않습니다.
 
 설치
-1. NEEV_260902_STARTUP_NOTICE_v4.3.1_USB.zip의 압축을 풉니다.
+1. NEEV_260902_STARTUP_NOTICE_v4.3.2_USB.zip의 압축을 풉니다.
 2. FAT32 또는 exFAT USB의 최상위에 아래 파일과 폴더를 넣습니다.
    NEMESIS.data
    NEMESIS.sh
-   local.hkmc.factory82-4.3.1-neev.zip
+   local.hkmc.factory82-4.3.2-neev.zip
    NEEV_STARTUP_NOTICE/ 폴더
    안쪽 패키지 ZIP은 압축을 풀지 않습니다.
 3. 주차한 상태에서 헤드유닛이 켜진 뒤 USB를 연결합니다.
@@ -24,7 +24,15 @@ USB 최상위에 다른 설치용 NEMESIS.data가 있으면 먼저 보관하세�
 기존 local.hkmc.factory82 4.2와 패키지 ID가 같으므로 기존 버전을 교체합니다.
 NEMESIS 자체나 HMG-API, CarPlay 패키지는 이 설치본에 포함하지 않습니다.
 
-4.3.1 설치 오류 수정
+4.3.2 대기 시간 개선
+기존의 부팅 시작 후 최소 15초 조건과 추가 2초 대기를 제거했습니다.
+부팅 완료·화면·서비스 등록을 1초 간격으로 확인하고, 준비되면 고정 대기 없이
+검증과 닫기 요청을 한 번의 Java 실행에서 처리합니다.
+호출 직전 부팅 상태 재확인, 중복 호출 방지, 불확실한 결과의 재시도 금지는 유지합니다.
+실제 반응에는 상태 확인 주기와 프로그램·OEM 처리 시간이 더해집니다.
+4.3.2의 실차 지연 시간은 아직 측정하지 않았습니다.
+
+4.3.1에서 반영한 설치 오류 수정
 정상 모델 경로 /system/onebin/neev_kr/를 neev_kr로 인식합니다.
 차량에 없을 수 있는 dirname/tail 명령 의존성을 제거했습니다.
 새 설치기는 원본 패키지를 교체하기 전에 API 사전 검사를 완료합니다.
@@ -55,23 +63,23 @@ USB를 연결한 상태에서 NEMESIS의 이 패키지 앱을 실행하면 읽�
 저장 경로가 없으면 진단 출력만 표시됩니다.
 
 제거
-NEEV_260902_STARTUP_NOTICE_v4.3.1_REMOVE_USB.zip을 별도로 압축 해제하고,
+NEEV_260902_STARTUP_NOTICE_v4.3.2_REMOVE_USB.zip을 별도로 압축 해제하고,
 안의 NEMESIS.data와 NEMESIS.sh를 USB 최상위에 넣은 뒤 연결합니다.
 또는 NEMESIS의 패키지 관리에서 local.hkmc.factory82를 제거합니다.
 제거는 이후 자동 호출을 멈춥니다. 이미 닫힌 안내창을 다시 표시하거나
 문서화되지 않은 OEM 호출의 효과를 되돌리는 역호출은 알려져 있지 않습니다.
 
 개발용 파일
-local.hkmc.factory82-4.3.1-neev.zip: NEMESIS 설치 패키지
-NEEV_260902_STARTUP_NOTICE_v4.3.1_USB.zip: 설치용 USB 묶음
-NEEV_260902_STARTUP_NOTICE_v4.3.1_REMOVE_USB.zip: 제거용 USB 묶음
-NEEV_260902_STARTUP_NOTICE_v4.3.1_SOURCE.zip: 소스·검사·빌드 스크립트
+local.hkmc.factory82-4.3.2-neev.zip: NEMESIS 설치 패키지
+NEEV_260902_STARTUP_NOTICE_v4.3.2_USB.zip: 설치용 USB 묶음
+NEEV_260902_STARTUP_NOTICE_v4.3.2_REMOVE_USB.zip: 제거용 USB 묶음
+NEEV_260902_STARTUP_NOTICE_v4.3.2_SOURCE.zip: 소스·검사·빌드 스크립트
 evidence.json: 차량 근거, 원본 해시, API와 한계
 SHA256SUMS.txt: 배포 파일 체크섬
 
-재빌드: 작업 폴더에서 python3 neev-startup-notice/build.py
-기본 도구: .tools/java-build의 JDK 17과 r8.jar (D8, Android 최소 API 19)
-다른 위치의 도구는 --jdk 및 --r8 옵션으로 지정할 수 있습니다.
+재빌드: 저장소에서 python3 build.py --jdk /path/to/jdk17 --r8 /path/to/r8.jar
+도구: JDK 17과 r8.jar (D8, Android 최소 API 19), Python 3, macOS/Linux
+결과는 저장소의 dist/ 및 release/ 폴더에 생성됩니다.
 빌드 스크립트는 PC 검사와 파일 패키징만 실행하며 차량 코드를 실행하지 않습니다.
 
 원본 패키지

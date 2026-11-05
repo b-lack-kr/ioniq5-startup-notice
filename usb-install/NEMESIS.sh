@@ -9,7 +9,7 @@ umask 077
 USB=${0%/*}; [ "$USB" != "$0" ] || USB=$PWD
 if [ "${NEEV_TEST_MODE:-0}" = 1 ]; then USB=$NEEV_INSTALL_USB; fi
 USB=$(cd "$USB" && pwd) || exit 2
-PACKAGE=local.hkmc.factory82-4.3.1-neev.zip
+PACKAGE=local.hkmc.factory82-4.3.2-neev.zip
 OUT="$USB/NEEV_STARTUP_NOTICE_RESULT_$(date +%Y%m%d_%H%M%S)_$$"
 mkdir "$OUT" || exit 2
 echo "$OUT" > "$USB/NEEV_STARTUP_NOTICE_LAST_RESULT.txt" || exit 2
@@ -32,7 +32,7 @@ fail() {
     exit 1
 }
 status PREFLIGHT
-echo 'NEEV startup notice installer 4.3.1'
+echo 'NEEV startup notice installer 4.3.2'
 for PROP in ro.build.product ro.board.platform ro.build.version.release ro.mobis.targetdir ro.mobis.onebindir sys.boot_completed; do
     printf '%s=' "$PROP"; getprop "$PROP"
 done
@@ -54,7 +54,7 @@ while read -r EXPECTED REL; do
     [ "${SUM%% *}" = "$EXPECTED" ] || fail PAYLOAD_HASH_MISMATCH
 done < "$USB/NEEV_STARTUP_NOTICE/payload.md5"
 [ "$PACKAGE_SEEN$HELPER_SEEN" = 11 ] || fail INCOMPLETE_MANIFEST
-STAGE=/data/nemesis/tmp/neev-startup-notice-431-$$
+STAGE=/data/nemesis/tmp/neev-startup-notice-432-$$
 if [ "${NEEV_TEST_MODE:-0}" = 1 ]; then STAGE=$NEEV_INSTALL_STAGE; fi
 [ ! -e "$STAGE" ] && [ ! -L "$STAGE" ] || fail STAGING_PATH_EXISTS
 mkdir -p "$STAGE" || fail STAGING_CREATE_FAILED
@@ -73,5 +73,5 @@ collect_logs
 [ "$RC" = 0 ] || fail "INSTALL_FAILED_RC_$RC"
 nemesis service status local.hkmc.factory82/apply > "$OUT/SERVICE.txt" 2>&1 || :
 status INSTALLED_TEST_NEXT_START
-notice '시작 안내창 4.3.1 설치 완료: 다음 시동에서 확인하세요'
+notice '시작 안내창 4.3.2 설치 완료: 다음 시동에서 확인하세요'
 exit 0
