@@ -1,0 +1,11 @@
+build/
+dist/
+release/
+package/lib/*.jar
+*.class
+*.dex
+__pycache__/
+*.pyc
+.DS_Store
+._*
+.tools/

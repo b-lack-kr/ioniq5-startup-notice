@@ -1,0 +1,24 @@
+[nemesis]
+version=1.1
+id=local.hkmc.factory82
+name=IONIQ 5 KOR Startup Notice
+package-version=4.3.1
+type=application,service
+short-desc=Auto-dismiss startup notice on NEEV KOR 260902
+detailed-desc=Named OEM hideConsentScreen call after boot readiness. Target-specific local build; vehicle validation pending. Launch for diagnostics.
+os=NEEV.KOR.0000.V039.001.260902
+models=neev_kr
+preinstall=scripts/preinstall.sh
+preuninstall=scripts/preuninstall.sh
+
+[app.0]
+kind=sh
+path=bin/diagnostics.sh
+uid=root
+
+[service.0]
+name=apply
+kind=sh
+path=svc/watch.sh
+uid=root
+mode=restart

@@ -1,0 +1,15 @@
+NEEV KOR 260902 adaptation, version 4.3.1, 2026-11-05.
+Based on local.hkmc.factory82 v4.2 by armandodollia (MIT, see LICENSE).
+Original ZIP SHA-256: c9d12d19fbccbcfd4d0c0e537ae692dfa0a8eba82ae6d21d05181627b1e810bb
+Upstream: https://github.com/armandodollia/nemesis-package-builds
+
+Changes: descriptor 1.1 and exact product guard; named hideConsentScreen API;
+strict boot-complete check; preinstall method check; monitor/readiness handling;
+targeted diagnostics. Version 4.3.1 normalizes the OEM model directory, removes
+dirname/tail dependencies, and adds a logged USB preflight/installer.
+No raw Binder transaction numbers or system-file patches.
+The existing package ID is kept so the original monitor is replaced on update.
+No HMG-API installation or modification is required.
+An accepted API request is not proof of visual dismissal. This build has not
+been vehicle-tested. Uninstall stops future automatic calls; no inverse OEM
+command is known or sent.

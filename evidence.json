@@ -1,0 +1,74 @@
+{
+  "target": {
+    "product": "NEEV.KOR.0000.V039.001.260902",
+    "name": "Ioniq 5",
+    "model": "NEEV",
+    "region": "KOR",
+    "firmware": "260902",
+    "platform": "tcc803x",
+    "android": "4.4.2",
+    "onebin": "neev_kr"
+  },
+  "vehicle_report": {
+    "provenance": "An owner-provided HMG-API vehicle scan resolved the listed named APIs on this target. Raw vehicle reports and identifiers are not distributed."
+  },
+  "named_api_scan": {
+    "framework.car_services": {
+      "class": "com.hkmc.Service"
+    },
+    "framework.car_services.factory": {
+      "field": "FACTORY_SERVICE",
+      "type": "java.lang.String",
+      "static": true
+    },
+    "framework.factory_service": {
+      "class": "com.hkmc.factory.IMicomFactoryService"
+    },
+    "framework.factory_service.hide_consent_screen": {
+      "method": "hideConsentScreen",
+      "params": [],
+      "ret": "void",
+      "static": false
+    },
+    "framework.factory_service_stub": {
+      "class": "com.hkmc.factory.IMicomFactoryService$Stub"
+    },
+    "framework.factory_service_stub.as_interface": {
+      "method": "asInterface",
+      "params": [
+        "android.os.IBinder"
+      ],
+      "ret": "com.hkmc.factory.IMicomFactoryService",
+      "static": true
+    }
+  },
+  "stock_fingerprints_md5": {
+    "/system/framework/automotive-service.odex": "7f8058346d64d6664e69f209a553c931",
+    "/system/framework/automotive.odex": "c76b8209ef171739b177eb14e8df61dd",
+    "/system/framework/framework.odex": "ffe86fa1540c8dea3b5499b1191bb727",
+    "/system/framework/framework2.odex": "012f5d1c55c950e30b0174bde42a35f2"
+  },
+  "original": {
+    "package_id": "local.hkmc.factory82",
+    "version": "4.2",
+    "sha256": "c9d12d19fbccbcfd4d0c0e537ae692dfa0a8eba82ae6d21d05181627b1e810bb",
+    "repository": "https://github.com/armandodollia/nemesis-package-builds"
+  },
+  "limitations": [
+    "Named API availability was observed; startup popup dismissal has not been tested on this car.",
+    "No inverse API is known. Removing the service prevents future calls but does not promise restoration of a dismissed screen.",
+    "Stock file fingerprints identify the reported image and do not prove current on-car state."
+  ],
+  "local_revision": {
+    "version": "4.3.1",
+    "previous_vehicle_result": "4.3.0: Operation failed immediately after USB install approval; no USB-side failure log captured.",
+    "fixes": [
+      "Normalize supported ro.mobis.targetdir path before model comparison",
+      "Remove external dirname and tail dependencies",
+      "Explicit Android runtime environment",
+      "Logged execute installer with read-only API preflight before package update"
+    ],
+    "root_cause_confirmed_on_vehicle": false
+  },
+  "runtime_provenance": "Prior owner-run Dalvik helpers on this head unit established app_process execution; this does not validate the consent-dismissal call."
+}
